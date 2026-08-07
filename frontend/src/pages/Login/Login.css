@@ -1,0 +1,121 @@
+* {
+    box-sizing: border-box;
+}
+
+.login-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Usa a cor de fundo definida no tema */
+    background-color: var(--bg-color);
+}
+
+.login-card {
+    width: 400px;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+    display: flex;
+    flex-direction: column;
+    
+    /* Usa as variáveis do cartão e borda */
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.login-card h1 {
+    margin: 0;
+    text-align: center;
+    color: var(--text-color); /* Aplica a cor do texto principal */
+}
+
+.login-card p {
+    margin-bottom: 30px;
+    text-align: center;
+    color: var(--text-muted); /* Aplica a cor do texto secundário */
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.input-group input {
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 15px;
+    
+    /* Variáveis dos inputs */
+    border: 1px solid var(--border-color);
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary-color); /* Fica com a cor principal (ex: azul) ao focar */
+}
+
+button {
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+    
+    /* Variável do botão principal */
+    background: var(--primary-color);
+    color: #ffffff; /* Texto branco fica bom em botões coloridos */
+    transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+button:hover {
+    /* O filter brightness escurece a cor principal automaticamente, sem precisar definir uma cor específica */
+    filter: brightness(0.9);
+}
+
+button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Banner de Alerta de Erro (Mantivemos as cores de alerta) */
+.login-error-banner {
+    background-color: rgba(211, 47, 47, 0.12);
+    border: 1px solid #d32f2f;
+    color: #d32f2f;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Animação suave de entrada do alerta */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

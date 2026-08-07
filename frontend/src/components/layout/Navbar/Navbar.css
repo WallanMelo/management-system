@@ -1,0 +1,64 @@
+.navbar {
+    height: 70px;
+    background: #1f2937;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+
+/* 🎯 MODO ESCURO: A Navbar fica toda preta */
+body.dark-mode .navbar {
+    background: #000000; /* Preto puro */
+    border-bottom: 1px solid #1e1e1e; /* Linha divisória discreta para separar do conteúdo */
+}
+
+.navbar-logo h2{
+    margin:0;
+    font-size:22px;
+    font-weight:700;
+}
+
+.navbar-menu{
+    display:flex;
+    gap:30px;
+}
+
+.navbar-menu a{
+    color:white;
+    text-decoration:none;
+    font-weight:500;
+    transition:.2s;
+}
+
+.navbar-menu a:hover{
+    color:#60a5fa;
+}
+
+.navbar-menu .active{
+    color:#60a5fa;
+    border-bottom:2px solid #60a5fa;
+    padding-bottom:4px;
+}
+
+.navbar-user{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.navbar-user button{
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:8px 15px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.navbar-user button:hover{
+    background:#1d4ed8;
+}

@@ -1,0 +1,43 @@
+.preview-panel {
+    width: 100%;
+    background-color: var(--bg-card, #18181b);
+    border-top: 1px solid var(--border-color, #3f3f46);
+    padding: 12px 20px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    max-height: 130px; /* 💡 Limita a altura máxima do painel */
+}
+
+/* Título secundário "Visualização" */
+.preview-panel h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #a1a1aa;
+    margin: 0 0 4px 0;
+}
+
+/* Nome do documento selecionado */
+.preview-panel h2 {
+    font-size: 0.95rem;
+    margin: 0 0 8px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Coloca "..." se o nome for gigante */
+}
+
+/* 💡 Exibe os detalhes lado a lado em linha para economizar espaço vertical */
+.preview-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    font-size: 0.85rem;
+    color: var(--text-color, #e4e4e7);
+}
+
+.preview-details p {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}

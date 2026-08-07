@@ -1,0 +1,33 @@
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    # ==========================
+    # PostgreSQL
+    # ==========================
+    database_host: str
+    database_port: int
+    database_name: str
+    database_user: str
+    database_password: str
+
+    # ==========================
+    # JWT
+    # ==========================
+    secret_key: str
+    algorithm: str
+    access_token_expire_minutes: int
+
+    # ==========================
+    # Google Drive
+    # ==========================
+    google_credentials: str
+    google_drive_root_folder_id: str | None = None
+
+    polling_interval: int = 10
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore"
+    )
+settings = Settings()

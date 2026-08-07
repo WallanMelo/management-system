@@ -1,0 +1,4 @@
+ id | cliente_id | diretorio_pai_id | nome | drive_folder_id | created_at | drive_parent_id | modified_time | ultima_sincronizacao | sincronizado | updated_at 
+----+------------+------------------+------+-----------------+------------+-----------------+---------------+----------------------+--------------+------------
+(0 rows)
+

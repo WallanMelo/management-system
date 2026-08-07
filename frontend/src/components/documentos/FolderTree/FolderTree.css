@@ -1,0 +1,68 @@
+.folder-tree {
+    width: 250px;
+    background-color: var(--bg-card); /* 👈 Acompanha a cor do tema */
+    color: var(--text-color);        /* 👈 Texto dinâmico */
+    padding: 15px;
+    border-right: 1px solid var(--border-color); /* 👈 Divisória dinâmica */
+    user-select: none;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.folder-tree h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.05rem;
+    color: var(--text-color);
+}
+
+.folder-tree ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.folder-tree li {
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 6px;
+    color: var(--text-color);
+    transition: background-color 0.2s, color 0.2s;
+    margin-bottom: 2px;
+}
+
+/* Hover suave em qualquer tema */
+.folder-tree li:hover {
+    background-color: var(--bg-hover);
+}
+
+/* 🎨 1 CLIQUE: Pasta Selecionada/Focada (Funciona perfeito em ambos os temas) */
+.folder-tree li.selected {
+    background-color: rgba(25, 118, 210, 0.18);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* 🏠 PASTA ABERTA: Onde você está navegando no momento */
+.folder-tree li.active {
+    background-color: #1976d2;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* Quando a pasta aberta também for a pasta selecionada no momento */
+.folder-tree li.active.selected {
+    background-color: #1565c0;
+    color: #ffffff;
+}
+
+/* Mensagem de pasta vazia */
+.folder-tree li.empty {
+    color: var(--text-muted);
+    cursor: default;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+.folder-tree li.empty:hover {
+    background-color: transparent;
+}

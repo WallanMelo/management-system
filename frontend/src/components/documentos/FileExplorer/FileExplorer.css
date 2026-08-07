@@ -1,0 +1,29 @@
+.file-explorer {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    min-height: 0; /* 💡 Permite que o flexbox calcule a altura real sem estourar */
+    background-color: var(--bg-card); /* 💡 Muda o fundo para o cinza escuro da tabela */
+    color: var(--text-color);
+    overflow: hidden;
+}
+
+.content {
+    display: flex;
+    flex: 1; /* 💡 ESTE É O SEGREDO: Faz a área da tabela esticar e empurrar o preview para o rodapé */
+    min-height: 0;
+    background-color: var(--bg-card);
+    border-top: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.table-area {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 20px;
+    background-color: var(--bg-card);
+    overflow-y: auto;
+    box-sizing: border-box;
+}

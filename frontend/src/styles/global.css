@@ -1,0 +1,33 @@
+/* src/global.css */
+
+:root {
+    --bg-color: #f4f6f8;       /* Cor de fundo da tela inteira (cinza bem claro) */
+    --bg-card: #ffffff;        /* Cor de fundo dos modais, painéis e sidebar */
+    --text-color: #333333;     /* Cor principal do texto */
+    --text-muted: #666666;     /* Cor de textos secundários (dicas, legendas) */
+    --border-color: #dddddd;   /* Cor das bordas e divisórias */
+    --primary-color: #007bff;  /* Cor azul dos botões principais */
+    --bg-hover: #f0f0f0ef;       /* Cor ao passar o mouse por cima (hover) */
+    --input-bg: #ffffff;       /* Fundo das caixas de texto */
+}
+
+/* Quando o body receber a classe dark-mode, as variáveis mudam: */
+body.dark-mode {
+    --bg-color: #121212;
+    --bg-card: #1e1e1e;
+    --text-color: #e0e0e0;
+    --text-muted: #aaaaaa;
+    --border-color: #333333;
+    --primary-color: #2b98f1;
+    --bg-hover: #2c2c2c;
+    --input-bg: #2d2d2d;
+}
+
+/* Aplicando as variáveis no corpo inteiro da página */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    margin: 0; /* Tira margens indesejadas do navegador */
+    font-family: sans-serif;
+}

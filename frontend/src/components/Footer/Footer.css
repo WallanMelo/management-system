@@ -1,0 +1,42 @@
+.bottom-navbar {
+    width: 100%;
+    background-color: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    padding: 10px 24px; /* 💡 Substitui a altura fixa por um espaçamento flexível */
+    font-size: 0.8rem;
+    color: #000000;
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column; /* 💡 Coloca o conteúdo um embaixo do outro */
+    justify-content: center;
+    align-items: center; /* 💡 Centraliza horizontalmente */
+    width: 100%;
+    gap: 4px; /* 💡 Dá um respiro entre a linha dos direitos e a dos créditos */
+    margin: 0 auto;
+}
+
+.developer-credit {
+    font-weight: 500;
+}
+
+.developer-link {
+    color: #2563eb; /* Cor do link */
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 4px;
+    transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.developer-link:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+/* 💡 A responsividade que tínhamos antes (Media Query) não é mais necessária 
+     já que agora a estrutura será em coluna para todos os tamanhos de tela. */
