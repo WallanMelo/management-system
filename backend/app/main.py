@@ -15,6 +15,14 @@ from app.api.routes import (
     sincronizacao
 )
 
+
+from fastapi import FastAPI
+from app.db.database import engine  
+from app.db.base import Base  
+
+# Esta linha instrui o SQLAlchemy a criar todas as tabelas caso não existam
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI(
     title="Sistema de Gestão de Documentos",
     description="""
