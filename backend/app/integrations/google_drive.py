@@ -21,23 +21,38 @@ class GoogleDriveClient:
     def __init__(self):
         self._lock = threading.Lock()  # Lock para thread-safety
 
-        # 1. Tenta ler a variável de ambiente (Modo Koyeb / Nuvem)
-        google_credentials_env = os.environ.get("GOOGLE_CREDENTIALS_JSON")
-        
-        if google_credentials_env:
-            # Transforma a string JSON de volta em dicionário
-            creds_dict = json.loads(google_credentials_env)
-            creds = ServiceAccountCredentials.from_service_account_info(
-                creds_dict, 
-                scopes=SCOPES
-            )
-        else:
-            # 2. Se não achar a variável, usa o arquivo local definido no .env (Modo Teste Local)
-            # Certifique-se de que settings.google_credentials aponta para o seu arquivo credentials.json
-            creds = ServiceAccountCredentials.from_service_account_file(
-                settings.google_credentials, 
-                scopes=SCOPES
-            )
+        # 1. Obtém o valor vindo do Pydantic ou do ambiente
+        raw_credentials = (
+            getattr(settings, "google_credentials", None)
+            or getattr(settings, "GOOGLE_CREDENTIALS", None)
+            or os.environ.get("GOOGLE_CREDENTIALS")
+            or os.environ.get("GOOGLE_CREDENTIALS_JSON")
+        )
+
+        creds_info = None
+
+        # 2. Converte o valor de forma inteligente (Dicionário, Arquivo Local ou String JSON)
+        if isinstance(raw_credentials, dict):
+            creds_info = raw_credentials
+        elif isinstance(raw_credentials, str):
+            raw_credentials = raw_credentials.strip()
+            # Se for um caminho de arquivo local existente (Modo Dev Local)
+            if os.path.exists(raw_credentials):
+                with open(raw_credentials, "r", encoding="utf-8") as f:
+                    creds_info = json.load(f)
+            # Se for a string em formato JSON (Modo Nuvem / Render)
+            else:
+                # Corrige possíveis quebras de linha da chave privada vinda do Render
+                formatted_json = raw_credentials.replace("\\n", "\n")
+                creds_info = json.loads(formatted_json)
+
+        if not creds_info:
+            raise ValueError("Nenhuma credencial válida do Google Drive foi encontrada.")
+
+        creds = ServiceAccountCredentials.from_service_account_info(
+            creds_info, 
+            scopes=SCOPES
+        )
 
         self.service = build(
             "drive",
@@ -49,7 +64,7 @@ class GoogleDriveClient:
         """Método utilitário para garantir que qualquer chamada HTTP seja thread-safe."""
         with self._lock:
             return request.execute()
-
+        
     # ==========================================================
     # TESTE
     # ==========================================================
