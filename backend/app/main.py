@@ -19,9 +19,36 @@ from app.api.routes import (
 from fastapi import FastAPI
 from app.database.engine import engine  
 from app.database.base import Base  
+from app.database.session import SessionLocal    # Ajuste o import do seu SessionLocal
+from app.models.usuario import Usuario          # Ajuste o import do seu Model de Usuario
+from app.core.security import get_password_hash # Ajuste o import da sua função de hash
+from app.models.enums import PerfilUsuario
 
 # Esta linha instrui o SQLAlchemy a criar todas as tabelas caso não existam
 Base.metadata.create_all(bind=engine)
+
+def criar_admin_inicial():
+    db = SessionLocal()
+    try:
+        if not db.query(Usuario).first():
+            admin = Usuario(
+                nome="Administrador",
+                email="admin@sistema.com",
+                senha_hash=get_password_hash("admin123"),
+                perfil=PerfilUsuario.ADMIN,  # Atenção: Ajuste para o nome do item no seu Enum (ex: PerfilUsuario.ADMINISTRADOR)
+                ativo=True
+            )
+            db.add(admin)
+            db.commit()
+            print(">>> Usuário admin inicial criado no Neon!")
+    except Exception as e:
+        print(f">>> Erro ao criar admin inicial: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
+# Executa a criação do primeiro usuario no carregamento do backend
+criar_admin_inicial()
 
 app = FastAPI(
     title="Sistema de Gestão de Documentos",
