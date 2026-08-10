@@ -31,7 +31,7 @@ class GoogleDriveClient:
 
         creds_info = None
 
-        # 2. Converte o valor de forma inteligente (Dicionário, Arquivo Local ou String JSON)
+        # 2. Converte o valor de forma inteligente
         if isinstance(raw_credentials, dict):
             creds_info = raw_credentials
         elif isinstance(raw_credentials, str):
@@ -40,14 +40,17 @@ class GoogleDriveClient:
             if os.path.exists(raw_credentials):
                 with open(raw_credentials, "r", encoding="utf-8") as f:
                     creds_info = json.load(f)
-            # Se for a string em formato JSON (Modo Nuvem / Render)
+            # Se comecar com '{', trata como string JSON (Modo Nuvem / Render)
             else:
-                # Corrige possíveis quebras de linha da chave privada vinda do Render
-                formatted_json = raw_credentials.replace("\\n", "\n")
-                creds_info = json.loads(formatted_json)
+                # strict=False permite ler caracteres especiais no JSON do Render
+                creds_info = json.loads(raw_credentials, strict=False)
 
         if not creds_info:
             raise ValueError("Nenhuma credencial válida do Google Drive foi encontrada.")
+
+        # 3. Corrige a formatação das quebras de linha da private_key DEPOIS de ler o JSON
+        if "private_key" in creds_info:
+            creds_info["private_key"] = creds_info["private_key"].replace("\\n", "\n")
 
         creds = ServiceAccountCredentials.from_service_account_info(
             creds_info, 
