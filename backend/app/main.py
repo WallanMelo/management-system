@@ -21,7 +21,7 @@ from app.database.engine import engine
 from app.database.base import Base  
 from app.database.session import SessionLocal    # Ajuste o import do seu SessionLocal
 from app.models.usuario import Usuario          # Ajuste o import do seu Model de Usuario
-from app.core.security import get_password_hash # Ajuste o import da sua função de hash
+from app.core.security import gerar_hash_senha
 from app.models.enums import PerfilUsuario
 
 # Esta linha instrui o SQLAlchemy a criar todas as tabelas caso não existam
@@ -34,7 +34,7 @@ def criar_admin_inicial():
             admin = Usuario(
                 nome="Administrador",
                 email="admin@sistema.com",
-                senha_hash=get_password_hash("admin123"),
+                senha_hash=gerar_hash_senha("admin123"),
                 perfil=PerfilUsuario.ADMIN,  # Atenção: Ajuste para o nome do item no seu Enum (ex: PerfilUsuario.ADMINISTRADOR)
                 ativo=True
             )
