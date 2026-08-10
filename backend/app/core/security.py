@@ -16,8 +16,9 @@ pwd_context = CryptContext(
 
 # Senhas
 def gerar_hash_senha(senha: str) -> str:
-    #Gera o hash BCryptda senha
-    return pwd_context.hash(senha)
+    # Garante limite máximo de 72 bytes suportado pelo algoritmo bcrypt
+    senha_cortada = senha.encode('utf-8')[:72].decode('utf-8', errors='ignore')
+    return pwd_context.hash(senha_cortada)
 
 def verificar_senha(senha: str, senha_hash: str) -> bool:
     #Verifica se a senha informa corresponde com o hash
