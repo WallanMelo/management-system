@@ -1,15 +1,14 @@
-from google.oauth2.service_account import Credentials
+import os
+import io
+import threading
+import json
+from google.oauth2.service_account import Credentials as ServiceAccountCredentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
-from app.core.config import settings
-import os, io, threading
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-import pickle
 from googleapiclient.errors import HttpError
 from fastapi import HTTPException
 
+from app.core.config import settings
 
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 
@@ -22,27 +21,23 @@ class GoogleDriveClient:
     def __init__(self):
         self._lock = threading.Lock()  # Lock para thread-safety
 
-        creds = None
-        token_path = os.path.join(
-            os.path.dirname(settings.google_credentials),
-            "token.pickle"
-        )
-        if os.path.exists(token_path):
-            with open(token_path, "rb") as token:
-                creds = pickle.load(token)
-
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    settings.google_credentials,
-                    SCOPES
-                )
-                creds = flow.run_local_server(port=0)
-
-            with open(token_path, "wb") as token:
-                pickle.dump(creds, token)
+        # 1. Tenta ler a variável de ambiente (Modo Koyeb / Nuvem)
+        google_credentials_env = os.environ.get("GOOGLE_CREDENTIALS_JSON")
+        
+        if google_credentials_env:
+            # Transforma a string JSON de volta em dicionário
+            creds_dict = json.loads(google_credentials_env)
+            creds = ServiceAccountCredentials.from_service_account_info(
+                creds_dict, 
+                scopes=SCOPES
+            )
+        else:
+            # 2. Se não achar a variável, usa o arquivo local definido no .env (Modo Teste Local)
+            # Certifique-se de que settings.google_credentials aponta para o seu arquivo credentials.json
+            creds = ServiceAccountCredentials.from_service_account_file(
+                settings.google_credentials, 
+                scopes=SCOPES
+            )
 
         self.service = build(
             "drive",
@@ -212,7 +207,7 @@ class GoogleDriveClient:
         arquivo.close()
         return caminho
 
-    # ======= DOWNLOAD BYTES (NOVO) ========================================================
+    # ======= DOWNLOAD BYTES ========================================================
     def download_bytes(self, file_id: str) -> bytes:
         request = self.service.files().get_media(fileId=file_id)
         buffer = io.BytesIO()

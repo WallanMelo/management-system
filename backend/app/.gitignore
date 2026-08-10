@@ -1,0 +1,22 @@
+# Ambientes Virtuais
+venv/
+env/
+.venv/
+
+# Variáveis de Ambiente
+.env
+
+# Credenciais do Google Drive
+credentials.json
+credentials/
+token.pickle
+
+# Cache do Python e Banco Local
+__pycache__/
+*.pyc
+*.sqlite3
+
+# Configurações de IDE e Sistema Operacional
+.vscode/
+.idea/
+.DS_Store

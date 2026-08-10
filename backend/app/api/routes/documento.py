@@ -333,10 +333,7 @@ def atualizar_documento(documento_id: int, dados: DocumentoUpdate, db: Session =
 @router.delete("/{documento_id}", status_code=status.HTTP_204_NO_CONTENT)
 def excluir_documento(documento_id: int,db: Session = Depends(get_db),):
     try:
-        documento_service.excluir(
-            db,
-            documento_id,
-        )
+        documento_service.excluir(db,documento_id,)
         return None
 
     except ValueError as e:

@@ -37,7 +37,7 @@ API desenvolvida para gerenciamento de documentos utilizando:
 # =====================================================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Libera para o Electron em qualquer IP/Rede do mundo 
+    allow_origins=["*"],  # Libera para o Electron
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -61,22 +61,14 @@ app.include_router(sincronizacao.router)
 # =====================================================================
 @app.get("/", tags=["Home"])
 def home():
-    return {
-        "status": "online",
-        "mensagem": "Sistema de Gestão de Documentos",
-        "versao": "1.0.0",
-    }
+    return {"status": "online","mensagem": "Sistema de Gestão de Documentos","versao": "1.0.0",}
 
 # =====================================================================
 # Health Check
 # =====================================================================
 @app.get("/health", tags=["Health"])
 def health():
-    return {
-        "status": "ok",
-        "database": "online",
-        "api": "running",
-    }
+    return {"status": "ok","database": "online","api": "running",}
 
 # =====================================================================
 # EXECUÇÃO (Escuta em 0.0.0.0 + Porta Dinâmica da Nuvem)
