@@ -17,7 +17,7 @@ from app.api.routes import (
 
 
 from fastapi import FastAPI
-from app.database import engine  
+from app.database.engine import engine  
 from app.database.base import Base  
 
 # Esta linha instrui o SQLAlchemy a criar todas as tabelas caso não existam
