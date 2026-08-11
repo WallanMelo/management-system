@@ -23,6 +23,7 @@ from app.database.session import SessionLocal    # Ajuste o import do seu Sessio
 from app.models.usuario import Usuario          # Ajuste o import do seu Model de Usuario
 from app.core.security import gerar_hash_senha
 from app.models.enums import PerfilUsuario
+from app.api.routes import google_auth
 
 # Esta linha instrui o SQLAlchemy a criar todas as tabelas caso não existam
 Base.metadata.create_all(bind=engine)
@@ -90,7 +91,7 @@ app.include_router(compartilhamento.router)
 app.include_router(configuracao.router)
 app.include_router(auditoria.router)
 app.include_router(sincronizacao.router)
-
+app.include_router(google_auth.router)
 # =====================================================================
 # Home
 # =====================================================================

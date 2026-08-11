@@ -8,7 +8,7 @@ from sqlalchemy import (
     Enum as SQLEnum
 )
 
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, Column
 
 from app.database.base import Base
 
@@ -20,6 +20,8 @@ class Configuracao(Base):
     __tablename__ = "configuracoes"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+
+    google_refresh_token = Column(String, nullable=True)
 
     nome_empresa: Mapped[str] = mapped_column(String(255),nullable=True)
 

@@ -1,83 +1,67 @@
 import os
 import io
 import threading
-import json
-from google.oauth2.service_account import Credentials as ServiceAccountCredentials
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from googleapiclient.errors import HttpError
 from fastapi import HTTPException
 
+from app.models.configuracao import Configuracao
+from app.db.session import SessionLocal
 from app.core.config import settings
 
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 
 class GoogleDriveClient:
     """
-    Cliente responsável por toda comunicação com a API do Google Drive.
-    Inclui um Lock de thread para evitar erros de concorrencia TLS/SSL no httplib2.
+    Cliente responsável por toda comunicação com a API do Google Drive via OAuth2.
+    Utiliza o refresh_token do Administrador salvo no PostgreSQL.
     """
 
     def __init__(self):
         self._lock = threading.Lock()
+        self.service = None
+        self._inicializar_servico()
 
-        creds_info = None
-        render_secret_path = "/etc/secrets/google_credentials.json"
+    def _inicializar_servico(self):
+        """Busca o token no banco e monta a credencial do Google."""
+        db = SessionLocal()
+        try:
+            config = db.query(Configuracao).first()
+            refresh_token = config.google_refresh_token if config else None
+        finally:
+            db.close()
 
-        # 1. Tenta carregar primeiro do Secret File oficial do Render
-        if os.path.exists(render_secret_path):
-            with open(render_secret_path, "r", encoding="utf-8") as f:
-                creds_info = json.load(f)
-        else:
-            # 2. Caso contrario, busca das variaveis de ambiente
-            raw_credentials = (
-                getattr(settings, "google_credentials", None)
-                or getattr(settings, "GOOGLE_CREDENTIALS", None)
-                or os.environ.get("GOOGLE_CREDENTIALS")
-                or os.environ.get("GOOGLE_CREDENTIALS_JSON")
-            )
+        # Se o admin ainda não conectou, o serviço fica como None sem derrubar o FastAPI
+        if not refresh_token:
+            return
 
-            if isinstance(raw_credentials, dict):
-                creds_info = raw_credentials
-            elif isinstance(raw_credentials, str):
-                raw_credentials = raw_credentials.strip()
-                if os.path.exists(raw_credentials):
-                    with open(raw_credentials, "r", encoding="utf-8") as f:
-                        creds_info = json.load(f)
-                else:
-                    creds_info = json.loads(raw_credentials, strict=False)
-
-        if not creds_info or not isinstance(creds_info, dict):
-            raise ValueError("Nenhuma credencial válida do Google Drive foi encontrada.")
-
-        # 3. Corrige formatacao da chave privada
-        if "private_key" in creds_info and isinstance(creds_info["private_key"], str):
-            pk = creds_info["private_key"]
-            pk = pk.replace("\\\\n", "\n").replace("\\n", "\n").strip()
-            creds_info["private_key"] = pk
-
-        # 4. Valida se o JSON possui a estrutura completa da Conta de Servico do Google
-        campos_obrigatorios = ["client_email", "token_uri", "private_key"]
-        faltantes = [campo for campo in campos_obrigatorios if campo not in creds_info]
-        if faltantes:
-            raise ValueError(f"O JSON do Google esta incompleto. Campos faltantes: {faltantes}")
-
-        creds = ServiceAccountCredentials.from_service_account_info(
-            creds_info, 
+        creds = Credentials(
+            token=None,
+            refresh_token=refresh_token,
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=getattr(settings, "google_client_id", None),
+            client_secret=getattr(settings, "google_client_secret", None),
             scopes=SCOPES
         )
 
-        self.service = build(
-            "drive",
-            "v3",
-            credentials=creds
-        )
+        self.service = build("drive", "v3", credentials=creds)
 
     def _execute(self, request):
-        """Método utilitário para garantir que qualquer chamada HTTP seja thread-safe."""
+        """Método utilitário para garantir chamadas thread-safe e validar se a conta está conectada."""
+        if not self.service:
+            # Tenta reconectar caso o Admin tenha acabado de vincular a conta
+            self._inicializar_servico()
+            if not self.service:
+                raise HTTPException(
+                    status_code=400,
+                    detail="O Google Drive ainda não foi conectado pelo Administrador."
+                )
+
         with self._lock:
             return request.execute()
-        
+
     # ==========================================================
     # TESTE
     # ==========================================================
@@ -86,24 +70,24 @@ class GoogleDriveClient:
         return self._execute(req)
     
     # ======= CRIAR PASTA ========================================================
-    def criar_pasta(self,nome: str,parent_id: str | None = None) -> str:
-        metadata = {"name": nome,"mimeType": "application/vnd.google-apps.folder"}
+    def criar_pasta(self, nome: str, parent_id: str | None = None) -> str:
+        metadata = {"name": nome, "mimeType": "application/vnd.google-apps.folder"}
 
         if parent_id:
             metadata["parents"] = [parent_id]
 
-        req = self.service.files().create(body=metadata,fields="id,name")
+        req = self.service.files().create(body=metadata, fields="id,name")
         pasta = self._execute(req)
 
         return pasta["id"]
 
     # ======= BUSCAR PASTA ========================================================
-    def buscar_pasta(self,folder_id: str):
-        req = self.service.files().get(fileId=folder_id,fields="id,name")
+    def buscar_pasta(self, folder_id: str):
+        req = self.service.files().get(fileId=folder_id, fields="id,name")
         return self._execute(req)
 
     # ======= LISTAR ITENS ========================================================
-    def listar_itens(self,folder_id: str):
+    def listar_itens(self, folder_id: str):
         req = self.service.files().list(
             q=f"'{folder_id}' in parents and trashed=false",
             fields="files(id,name,mimeType,parents,createdTime,modifiedTime,size)"
@@ -113,7 +97,7 @@ class GoogleDriveClient:
         return resultado.get("files", [])
 
     # ======= LISTAR ARQUIVOS ========================================================
-    def listar_arquivos(self,folder_id: str):
+    def listar_arquivos(self, folder_id: str):
         itens = self.listar_itens(folder_id)
 
         return [
@@ -123,7 +107,7 @@ class GoogleDriveClient:
         ]
 
     # ======= LISTAR PASTAS ========================================================
-    def listar_pastas(self,folder_id: str):
+    def listar_pastas(self, folder_id: str):
         itens = self.listar_itens(folder_id)
 
         return [
@@ -166,7 +150,7 @@ class GoogleDriveClient:
                 raise HTTPException(status_code=500, detail=f"Erro no Google Drive: {error}")
 
     # ======= RENOMEAR ========================================================
-    def renomear(self,file_id: str,novo_nome: str):
+    def renomear(self, file_id: str, novo_nome: str):
         req = self.service.files().update(
             fileId=file_id,
             body={"name": novo_nome}
@@ -202,15 +186,12 @@ class GoogleDriveClient:
         return resposta["startPageToken"]
     
     # ======= CHANGES API ========================================================
-    def get_changes(
-            self,
-            page_token: str
-        ):
-            req = self.service.changes().list(
-                pageToken=page_token,
-                fields="nextPageToken,newStartPageToken,changes(fileId,removed,time,file(id,name,mimeType,parents,trashed,modifiedTime,createdTime,size))"
-            )
-            return self._execute(req)
+    def get_changes(self, page_token: str):
+        req = self.service.changes().list(
+            pageToken=page_token,
+            fields="nextPageToken,newStartPageToken,changes(fileId,removed,time,file(id,name,mimeType,parents,trashed,modifiedTime,createdTime,size))"
+        )
+        return self._execute(req)
 
     # ======= DOWNLOAD ========================================================
     def download(self, file_id: str, destino: str) -> str:
@@ -220,7 +201,6 @@ class GoogleDriveClient:
         nome = metadata["name"]
         caminho = os.path.join(destino, nome)
 
-        # ⚡ Cria a pasta temporária de destino caso ela ainda não exista no sistema
         os.makedirs(os.path.dirname(caminho), exist_ok=True)
 
         request = self.service.files().get_media(fileId=file_id)
