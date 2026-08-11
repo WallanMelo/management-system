@@ -21,36 +21,46 @@ class GoogleDriveClient:
     def __init__(self):
         self._lock = threading.Lock()
 
-        # 1. Obtém o valor vindo do Pydantic ou do ambiente
-        raw_credentials = (
-            getattr(settings, "google_credentials", None)
-            or getattr(settings, "GOOGLE_CREDENTIALS", None)
-            or os.environ.get("GOOGLE_CREDENTIALS")
-            or os.environ.get("GOOGLE_CREDENTIALS_JSON")
-        )
-
         creds_info = None
+        render_secret_path = "/etc/secrets/google_credentials.json"
 
-        # 2. Converte o valor de forma inteligente
-        if isinstance(raw_credentials, dict):
-            creds_info = raw_credentials
-        elif isinstance(raw_credentials, str):
-            raw_credentials = raw_credentials.strip()
-            if os.path.exists(raw_credentials):
-                with open(raw_credentials, "r", encoding="utf-8") as f:
-                    creds_info = json.load(f)
-            else:
-                creds_info = json.loads(raw_credentials, strict=False)
+        # 1. Tenta carregar primeiro do Secret File oficial do Render
+        if os.path.exists(render_secret_path):
+            with open(render_secret_path, "r", encoding="utf-8") as f:
+                creds_info = json.load(f)
+        else:
+            # 2. Caso contrario, busca das variaveis de ambiente
+            raw_credentials = (
+                getattr(settings, "google_credentials", None)
+                or getattr(settings, "GOOGLE_CREDENTIALS", None)
+                or os.environ.get("GOOGLE_CREDENTIALS")
+                or os.environ.get("GOOGLE_CREDENTIALS_JSON")
+            )
 
-        if not creds_info:
+            if isinstance(raw_credentials, dict):
+                creds_info = raw_credentials
+            elif isinstance(raw_credentials, str):
+                raw_credentials = raw_credentials.strip()
+                if os.path.exists(raw_credentials):
+                    with open(raw_credentials, "r", encoding="utf-8") as f:
+                        creds_info = json.load(f)
+                else:
+                    creds_info = json.loads(raw_credentials, strict=False)
+
+        if not creds_info or not isinstance(creds_info, dict):
             raise ValueError("Nenhuma credencial válida do Google Drive foi encontrada.")
 
-        # 3. Trata e limpa a private_key contra erros de escape do Render
+        # 3. Corrige formatacao da chave privada
         if "private_key" in creds_info and isinstance(creds_info["private_key"], str):
             pk = creds_info["private_key"]
-            # Substitui barras escapadas simples ou duplas por quebras de linha reais
             pk = pk.replace("\\\\n", "\n").replace("\\n", "\n").strip()
             creds_info["private_key"] = pk
+
+        # 4. Valida se o JSON possui a estrutura completa da Conta de Servico do Google
+        campos_obrigatorios = ["client_email", "token_uri", "private_key"]
+        faltantes = [campo for campo in campos_obrigatorios if campo not in creds_info]
+        if faltantes:
+            raise ValueError(f"O JSON do Google esta incompleto. Campos faltantes: {faltantes}")
 
         creds = ServiceAccountCredentials.from_service_account_info(
             creds_info, 
