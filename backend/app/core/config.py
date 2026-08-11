@@ -28,17 +28,12 @@ class Settings(BaseSettings):
     google_client_id: str | None = None
     google_client_secret: str | None = None
 
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
-
     polling_interval: int = 10
 
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore"
     )
-
 
     @property
     def google_credentials_dict(self) -> dict:
