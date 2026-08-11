@@ -63,8 +63,17 @@ export default function Dashboard() {
   })();
 
   // Valida se o perfil é Administrador
-  const isAdmin = usuarioLogado?.perfil === "ADMIN" || usuarioLogado?.is_admin === true;
+// Converte o texto para maiúsculas e verifica se contém "ADMIN" ou "ADMINISTRADOR"
+const perfilTexto = String(
+  usuarioLogado?.perfil || 
+  usuarioLogado?.cargo || 
+  usuarioLogado?.tipo || 
+  ""
+).toUpperCase();
 
+const isAdmin = 
+  perfilTexto.includes("ADMIN") || 
+  usuarioLogado?.is_admin === true;
   useEffect(() => {
     carregarMetricas();
 
