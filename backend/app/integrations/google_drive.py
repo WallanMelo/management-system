@@ -19,7 +19,7 @@ class GoogleDriveClient:
     """
 
     def __init__(self):
-        self._lock = threading.Lock()  # Lock para thread-safety
+        self._lock = threading.Lock()
 
         # 1. Obtém o valor vindo do Pydantic ou do ambiente
         raw_credentials = (
@@ -36,21 +36,21 @@ class GoogleDriveClient:
             creds_info = raw_credentials
         elif isinstance(raw_credentials, str):
             raw_credentials = raw_credentials.strip()
-            # Se for um caminho de arquivo local existente (Modo Dev Local)
             if os.path.exists(raw_credentials):
                 with open(raw_credentials, "r", encoding="utf-8") as f:
                     creds_info = json.load(f)
-            # Se comecar com '{', trata como string JSON (Modo Nuvem / Render)
             else:
-                # strict=False permite ler caracteres especiais no JSON do Render
                 creds_info = json.loads(raw_credentials, strict=False)
 
         if not creds_info:
             raise ValueError("Nenhuma credencial válida do Google Drive foi encontrada.")
 
-        # 3. Corrige a formatação das quebras de linha da private_key DEPOIS de ler o JSON
-        if "private_key" in creds_info:
-            creds_info["private_key"] = creds_info["private_key"].replace("\\n", "\n")
+        # 3. Trata e limpa a private_key contra erros de escape do Render
+        if "private_key" in creds_info and isinstance(creds_info["private_key"], str):
+            pk = creds_info["private_key"]
+            # Substitui barras escapadas simples ou duplas por quebras de linha reais
+            pk = pk.replace("\\\\n", "\n").replace("\\n", "\n").strip()
+            creds_info["private_key"] = pk
 
         creds = ServiceAccountCredentials.from_service_account_info(
             creds_info, 
