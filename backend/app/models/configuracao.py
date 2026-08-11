@@ -8,7 +8,8 @@ from sqlalchemy import (
     Enum as SQLEnum
 )
 
-from sqlalchemy.orm import Mapped, mapped_column, Column
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Column
 
 from app.database.base import Base
 
