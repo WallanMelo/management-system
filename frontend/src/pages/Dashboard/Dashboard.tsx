@@ -24,6 +24,31 @@ function formatarTempoRelativo(data: Date | null): string {
   return `há ${dias} dia${dias > 1 ? "s" : ""}`;
 }
 
+// 🔓 Decodifica as informações contidas no JWT (access_token)
+function obterDadosDoToken(): any {
+  try {
+    const token = localStorage.getItem("access_token");
+    if (!token) return null;
+
+    const base64Url = token.split(".")[1];
+    if (!base64Url) return null;
+
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      window
+        .atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error("Erro ao decodificar token JWT:", error);
+    return null;
+  }
+}
+
 const CACHE_KEY = "dashboard_metrics_cache";
 
 export default function Dashboard() {
@@ -52,27 +77,34 @@ export default function Dashboard() {
   const [ultimaSincronizacao, setUltimaSincronizacao] = useState<Date | null>(cacheSalvo?.ultimaSincronizacao ? new Date(cacheSalvo.ultimaSincronizacao) : null);
   const [tempoTexto, setTempoTexto] = useState<string>("carregando...");
 
-  // Busca o usuário salvo no localStorage após o login
+  // Tenta obter o usuário do localStorage ou decodifica diretamente do access_token
   const usuarioLogado = (() => {
     try {
-      const user = localStorage.getItem("usuario");
-      return user ? JSON.parse(user) : null;
-    } catch {
-      return null;
-    }
+      const raw = localStorage.getItem("usuario") || localStorage.getItem("user");
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return obterDadosDoToken();
   })();
 
-  // Valida se o perfil é Administrador
-  // Converte o texto para maiúsculas e verifica se contém "ADMIN" ou "ADMINISTRADOR"
+  // Extrai o perfil independentemente da chave usada no token ou objeto
   const perfilTexto = String(
     usuarioLogado?.perfil || 
-    usuarioLogado?.cargo || 
+    usuarioLogado?.perfil_usuario || 
+    usuarioLogado?.perfilUsuario || 
+    usuarioLogado?.role || 
     usuarioLogado?.tipo || 
+    usuarioLogado?.cargo || 
     ""
   ).toUpperCase();
 
-  const isAdmin = perfilTexto.includes("ADMIN") || usuarioLogado?.is_admin === true;
-  
+  // Valida permissão administrativa
+  const isAdmin = 
+    perfilTexto.includes("ADMIN") || 
+    usuarioLogado?.is_admin === true || 
+    usuarioLogado?.admin === true;
+
+  console.log("DEBUG DASHBOARD:", { usuarioLogado, perfilTexto, isAdmin });
+
   useEffect(() => {
     carregarMetricas();
 
