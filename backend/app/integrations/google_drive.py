@@ -25,15 +25,18 @@ class GoogleDriveClient:
         self._inicializar_servico()
 
     def _inicializar_servico(self):
-        """Busca o token no banco e monta a credencial do Google."""
-        db = SessionLocal()
+        """Busca o token no banco e monta a credencial do Google com proteção de erro."""
+        refresh_token = None
+        
         try:
+            db = SessionLocal()
             config = db.query(Configuracao).first()
             refresh_token = config.google_refresh_token if config else None
-        finally:
             db.close()
+        except Exception:
+            # Se a coluna/tabela ainda não existir ou o banco estiver indisponível no boot
+            return
 
-        # Se o admin ainda não conectou, o serviço fica como None sem derrubar o FastAPI
         if not refresh_token:
             return
 
