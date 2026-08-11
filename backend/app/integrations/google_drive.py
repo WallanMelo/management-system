@@ -8,7 +8,7 @@ from googleapiclient.errors import HttpError
 from fastapi import HTTPException
 
 from app.models.configuracao import Configuracao
-from app.db.session import SessionLocal
+from app.database.session import SessionLocal
 from app.core.config import settings
 
 SCOPES = ["https://www.googleapis.com/auth/drive"]
