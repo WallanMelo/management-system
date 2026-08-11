@@ -4,7 +4,7 @@ from google_auth_oauthlib.flow import Flow
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.db.session import get_db
+from app.database.session import get_db
 from app.models.configuracao import Configuracao
 
 router = APIRouter(prefix="/integracoes/google", tags=["Google OAuth"])
