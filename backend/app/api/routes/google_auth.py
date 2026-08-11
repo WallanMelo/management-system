@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 from google_auth_oauthlib.flow import Flow
@@ -12,11 +13,18 @@ router = APIRouter(prefix="/integracoes/google", tags=["Google OAuth"])
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 REDIRECT_URI = "https://management-system-6bb0.onrender.com/integracoes/google/callback"
 
-
 def get_client_config():
-    """Gera a configuração do OAuth2 verificando se as chaves existem no settings."""
-    client_id = getattr(settings, "google_client_id", None)
-    client_secret = getattr(settings, "google_client_secret", None)
+    """Busca do Pydantic ou diretamente do sistema operacional (Render)."""
+    client_id = (
+        getattr(settings, "google_client_id", None)
+        or os.getenv("GOOGLE_CLIENT_ID")
+        or os.getenv("google_client_id")
+    )
+    client_secret = (
+        getattr(settings, "google_client_secret", None)
+        or os.getenv("GOOGLE_CLIENT_SECRET")
+        or os.getenv("google_client_secret")
+    )
 
     if not client_id or not client_secret:
         raise HTTPException(
@@ -32,7 +40,6 @@ def get_client_config():
             "token_uri": "https://oauth2.googleapis.com/token",
         }
     }
-
 
 @router.get("/login")
 def login_google():
