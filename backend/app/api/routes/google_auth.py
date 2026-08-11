@@ -1,20 +1,22 @@
 import os
-from fastapi import APIRouter, Depends, HTTPException, status
+from urllib.parse import urlencode
+import requests
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
-from google_auth_oauthlib.flow import Flow
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.database.session import get_db
+from app.db.session import get_db
 from app.models.configuracao import Configuracao
 
 router = APIRouter(prefix="/integracoes/google", tags=["Google OAuth"])
 
-SCOPES = ["https://www.googleapis.com/auth/drive"]
+SCOPES = "https://www.googleapis.com/auth/drive"
 REDIRECT_URI = "https://management-system-6bb0.onrender.com/integracoes/google/callback"
 
-def get_client_config():
-    """Busca do Pydantic ou diretamente do sistema operacional (Render)."""
+
+def get_client_credentials():
+    """Busca as credenciais das variáveis do settings ou os.getenv."""
     client_id = (
         getattr(settings, "google_client_id", None)
         or os.getenv("GOOGLE_CLIENT_ID")
@@ -32,58 +34,61 @@ def get_client_config():
             detail="Variáveis GOOGLE_CLIENT_ID ou GOOGLE_CLIENT_SECRET não configuradas no backend."
         )
 
-    return {
-        "web": {
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token",
-        }
-    }
+    return client_id, client_secret
+
 
 @router.get("/login")
 def login_google():
-    """O Admin clica no app e é redirecionado para a tela de autorização do Google."""
-    flow = Flow.from_client_config(
-        get_client_config(),
-        scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
-    )
+    """Gera a URL direta de autorização OAuth2 do Google."""
+    client_id, _ = get_client_credentials()
 
-    authorization_url, _ = flow.authorization_url(
-        access_type="offline",
-        prompt="consent",
-        include_granted_scopes="true"
-    )
-    return RedirectResponse(authorization_url)
+    params = {
+        "client_id": client_id,
+        "redirect_uri": REDIRECT_URI,
+        "response_type": "code",
+        "scope": SCOPES,
+        "access_type": "offline",
+        "prompt": "consent",
+    }
+
+    auth_url = f"https://accounts.google.com/o/oauth2/auth?{urlencode(params)}"
+    return RedirectResponse(auth_url)
 
 
 @router.get("/callback")
 def callback_google(code: str, db: Session = Depends(get_db)):
-    """Google redireciona de volta com o código para trocar pelo refresh_token."""
-    flow = Flow.from_client_config(
-        get_client_config(),
-        scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
-    )
+    """Recebe o código do Google e troca diretamente pelo refresh_token."""
+    client_id, client_secret = get_client_credentials()
+
+    token_url = "https://oauth2.googleapis.com/token"
+    payload = {
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "code": code,
+        "grant_type": "authorization_code",
+        "redirect_uri": REDIRECT_URI,
+    }
 
     try:
-        flow.fetch_token(code=code)
-        credentials = flow.credentials
+        response = requests.post(token_url, data=payload, timeout=10)
+        data = response.json()
 
-        if not credentials.refresh_token:
+        if response.status_code != 200 or "refresh_token" not in data:
+            erro_detalhe = data.get("error_description") or data.get("error") or "Sem refresh_token."
             raise HTTPException(
                 status_code=400,
-                detail="O Google não retornou o refresh_token. Remova o aplicativo da sua conta Google e tente novamente."
+                detail=f"Não foi possível obter o refresh_token do Google: {erro_detalhe}"
             )
 
-        # Salva ou atualiza no banco de dados
+        refresh_token = data["refresh_token"]
+
+        # Salva no banco de dados Neon PostgreSQL
         config = db.query(Configuracao).first()
         if not config:
             config = Configuracao()
             db.add(config)
 
-        config.google_refresh_token = credentials.refresh_token
+        config.google_refresh_token = refresh_token
         db.commit()
 
         return {
