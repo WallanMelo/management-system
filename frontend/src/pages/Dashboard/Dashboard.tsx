@@ -5,7 +5,6 @@ import { usuarioService } from "../../services/usuario";
 import { listarDocumentos, sincronizarComGoogleDrive } from "../../services/documento"; 
 import "./Dashboard.css";
 
-// ⏱️ Função auxiliar para transformar o tempo em texto amigável
 function formatarTempoRelativo(data: Date | null): string {
   if (!data) return "carregando...";
 
@@ -28,7 +27,6 @@ function formatarTempoRelativo(data: Date | null): string {
 const CACHE_KEY = "dashboard_metrics_cache";
 
 export default function Dashboard() {
-  // 📦 Recupera os dados em cache no momento da criação do estado
   const cacheSalvo = (() => {
     try {
       const dados = localStorage.getItem(CACHE_KEY);
@@ -43,22 +41,29 @@ export default function Dashboard() {
   const [totalDocumentos, setTotalDocumentos] = useState<number>(cacheSalvo?.totalDocumentos ?? 0);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   
-  // 🎯 Só exibe "..." (loading) se NÃO houver nenhum cache armazenado
   const [loading, setLoading] = useState<boolean>(!cacheSalvo);
-  // 🎯 Estado sutil para indicar atualização silenciosa em segundo plano
   const [atualizando, setAtualizando] = useState<boolean>(false);
 
-  // 🎯 ESTADOS DO GOOGLE DRIVE
   const [driveConectado, setDriveConectado] = useState<boolean>(cacheSalvo?.driveConectado ?? false);
   const [driveStatusTexto, setDriveStatusTexto] = useState<string>(
     cacheSalvo?.driveStatusTexto ?? "Verificando..."
   );
 
-  // 🎯 Data/Hora da última sincronização
-  const [ultimaSincronizacao, setUltimaSincronizacao] = useState<Date | null>(
-    cacheSalvo?.ultimaSincronizacao ? new Date(cacheSalvo.ultimaSincronizacao) : null
-  );
+  const [ultimaSincronizacao, setUltimaSincronizacao] = useState<Date | null>(cacheSalvo?.ultimaSincronizacao ? new Date(cacheSalvo.ultimaSincronizacao) : null);
   const [tempoTexto, setTempoTexto] = useState<string>("carregando...");
+
+  // Busca o usuário salvo no localStorage após o login
+  const usuarioLogado = (() => {
+    try {
+      const user = localStorage.getItem("usuario");
+      return user ? JSON.parse(user) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  // Valida se o perfil é Administrador
+  const isAdmin = usuarioLogado?.perfil === "ADMIN" || usuarioLogado?.is_admin === true;
 
   useEffect(() => {
     carregarMetricas();
@@ -87,16 +92,13 @@ export default function Dashboard() {
         setAtualizando(true);
       }
 
-      // 1. Busca Usuários do banco
       const listaUsuarios = await usuarioService.listar();
       const totalU = listaUsuarios.length;
       const ativosU = listaUsuarios.filter((u) => u.ativo).length;
 
-      // 2. Busca Documentos do banco
       const listaDocs = await listarDocumentos();
       const totalD = listaDocs.length;
 
-      // 3. ☁️ Checa a saúde da integração com o Google Drive
       let driveOk = false;
       let driveTxt = "";
 
@@ -112,7 +114,6 @@ export default function Dashboard() {
 
       const agora = new Date();
 
-      // 🔄 Atualiza estados com os novos dados
       setTotalUsuarios(totalU);
       setUsuariosAtivos(ativosU);
       setTotalDocumentos(totalD);
@@ -120,7 +121,6 @@ export default function Dashboard() {
       setDriveStatusTexto(driveTxt);
       setUltimaSincronizacao(agora);
 
-      // 💾 Salva a foto atual no cache
       localStorage.setItem(
         CACHE_KEY,
         JSON.stringify({
@@ -138,6 +138,17 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
       setAtualizando(false);
+    }
+  }
+
+  // 🔗 Redireciona para o fluxo OAuth2 do Backend
+  function handleConectarGoogleDrive() {
+    const authUrl = "https://management-system-6bb0.onrender.com/integracoes/google/login";
+    
+    if ((window as any).electronAPI?.openExternal) {
+      (window as any).electronAPI.openExternal(authUrl);
+    } else {
+      window.open(authUrl, "_blank");
     }
   }
 
@@ -191,9 +202,27 @@ export default function Dashboard() {
                 {loading ? "..." : driveConectado ? "Conectado" : "Desconectado"}
               </span>
               <p className="stat-description">{loading ? "Checando conexão..." : driveStatusTexto}</p>
+              
+              {/* Exibe o botão de ação apenas para Admin */}
+              {!loading && isAdmin && (
+                <button 
+                  onClick={handleConectarGoogleDrive}
+                  style={{
+                    marginTop: "10px",
+                    padding: "6px 12px",
+                    fontSize: "0.85rem",
+                    borderRadius: "6px",
+                    border: "none",
+                    backgroundColor: driveConectado ? "#4b5563" : "#2563eb",
+                    color: "#ffffff",
+                    cursor: "pointer"
+                  }}
+                >
+                  {driveConectado ? "Reconectar Conta" : "Conectar Google Drive"}
+                </button>
+              )}
             </div>
           </div>
-
         </section>
 
         {/* SEÇÃO DE AÇÕES RÁPIDAS E RECENTES */}
@@ -209,19 +238,26 @@ export default function Dashboard() {
                 </div>
               </Link>
 
+              {/* Exibe o atalho rápido apenas para Admin */}
+              {isAdmin && (
+                <button 
+                  onClick={handleConectarGoogleDrive} 
+                  className="action-btn"
+                  style={{ background: "none", border: "none", textAlign: "left", cursor: "pointer", width: "100%" }}
+                >
+                  <span>☁️</span>
+                  <div>
+                    <strong>{driveConectado ? "Reconectar Google Drive" : "Conectar Google Drive"}</strong>
+                    <p>Autorize a conta master para armazenar os arquivos</p>
+                  </div>
+                </button>
+              )}
+
               <Link to="/usuarios" className="action-btn">
                 <span>👥</span>
                 <div>
                   <strong>Cadastrar Usuário</strong>
                   <p>Adicione novos administradores ou operadores</p>
-                </div>
-              </Link>
-
-              <Link to="/configuracoes" className="action-btn">
-                <span>⚙️</span>
-                <div>
-                  <strong>Configurações do Perfil</strong>
-                  <p>Altere sua senha e preferência de tema</p>
                 </div>
               </Link>
             </div>
