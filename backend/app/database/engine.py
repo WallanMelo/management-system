@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 # Aceita tanto a DATABASE_URL completa (padrão do Neon/Render) quanto os campos individuais
 DATABASE_URL = getattr(settings, "DATABASE_URL", None) or getattr(settings, "database_url", None)
 
-if not database_url:
+if not DATABASE_URL:
     DATABASE_URL = (
         f"postgresql+psycopg2://"
         f"{settings.database_user}:"
