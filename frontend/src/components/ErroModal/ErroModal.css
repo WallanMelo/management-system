@@ -1,19 +1,18 @@
-/* ErroModal.css */
 .modal-erro {
-    border-top: 5px solid #d32f2f; /* Destaca que é um erro com uma borda vermelha no topo */
+    border-top: 5px solid #d32f2f;
 }
 
 .modal-header-erro {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 10px;
 }
 
 .modal-header-erro h3 {
     margin: 0;
-    color: #333;
+    color: var(--text-color);
     font-size: 1.15rem;
     display: flex;
     align-items: center;
@@ -25,9 +24,9 @@
 }
 
 .btn-entendi {
-    background-color: #f5f5f5;
-    color: #333;
-    border: 1px solid #ccc;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
     padding: 8px 24px;
     border-radius: 6px;
     font-size: 0.9rem;
@@ -37,5 +36,5 @@
 }
 
 .btn-entendi:hover {
-    background-color: #e0e0e0;
+    background-color: var(--bg-hover);
 }

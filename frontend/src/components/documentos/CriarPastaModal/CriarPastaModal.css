@@ -4,7 +4,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(15, 23, 42, 0.6);
+    background-color: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(3px);
     display: flex;
     justify-content: center;
@@ -14,11 +14,13 @@
 }
 
 .modal-container {
-    background: #ffffff;
+    background: var(--bg-card);
+    color: var(--text-color);
     border-radius: 12px;
     width: 100%;
     max-width: 420px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
     overflow: hidden;
     animation: scaleUp 0.2s ease-in-out;
 }
@@ -28,13 +30,13 @@
     justify-content: space-between;
     align-items: center;
     padding: 18px 24px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h3 {
     margin: 0;
     font-size: 1.15rem;
-    color: #1e293b;
+    color: var(--text-color);
     font-weight: 600;
 }
 
@@ -42,12 +44,12 @@
     background: transparent;
     border: none;
     font-size: 1.1rem;
-    color: #94a3b8;
+    color: var(--text-muted);
     cursor: pointer;
 }
 
 .modal-close-btn:hover {
-    color: #475569;
+    color: var(--text-color);
 }
 
 .modal-body {
@@ -58,14 +60,16 @@
     display: block;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #475569;
+    color: var(--text-muted);
     margin-bottom: 8px;
 }
 
 .modal-body input {
     width: 100%;
     padding: 10px 14px;
-    border: 1px solid #cbd5e1;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 0.95rem;
     outline: none;
@@ -74,8 +78,8 @@
 }
 
 .modal-body input:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
 }
 
 .modal-actions {
@@ -83,8 +87,8 @@
     justify-content: flex-end;
     gap: 12px;
     padding: 16px 24px;
-    background-color: var(--bg-card); /* 💡 Usando a variável do tema */
-    border-top: 1px solid var(--border-color); /* 💡 Usando a variável do tema */
+    background-color: var(--bg-card);
+    border-top: 1px solid var(--border-color);
 }
 
 .modal-actions button {
@@ -98,26 +102,27 @@
 }
 
 .btn-cancelar {
-    background: #ffffff;
-    color: #64748b;
-    border: 1px solid #cbd5e1 !important;
+    background: var(--input-bg);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color) !important;
 }
 
 .btn-cancelar:hover {
-    background: #f1f5f9;
+    background: var(--bg-hover);
+    color: var(--text-color);
 }
 
 .btn-confirmar {
-    background: #2563eb;
+    background: var(--primary-color);
     color: #ffffff;
 }
 
 .btn-confirmar:hover {
-    background: #1d4ed8;
+    filter: brightness(0.9);
 }
 
 .btn-confirmar:disabled {
-    background: #94a3b8;
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
