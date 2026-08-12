@@ -23,6 +23,7 @@
     border: 1px solid var(--border-color);
     overflow: hidden;
     animation: scaleUp 0.2s ease-in-out;
+    padding: 18px 24px 10px 24px; /* 👈 24px na esquerda e direita */
 }
 
 .modal-header {

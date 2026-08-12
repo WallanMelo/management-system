@@ -8,6 +8,7 @@
     align-items: center;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 10px;
+    padding: 18px 24px 10px 24px; /* 👈 24px na esquerda e direita */
 }
 
 .modal-header-erro h3 {

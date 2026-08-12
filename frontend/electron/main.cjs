@@ -18,8 +18,14 @@ function createWindow() {
         },
     });
 
-    const devUrl = process.env.ELECTRON_START_URL || "http://localhost:5173";
-    mainWindow.loadURL(devUrl);
+    if (app.isPackaged) {
+        // Quando o app é gerado em .exe/instalado, carrega a pasta dist compilada
+        mainWindow.loadFile(path.join(__dirname, "dist", "index.html"));
+    } else {
+        // Em modo de desenvolvimento, carrega a URL do Vite
+        const devUrl = process.env.ELECTRON_START_URL || "http://localhost:5173";
+        mainWindow.loadURL(devUrl);
+    }
 }
 
 app.whenReady().then(createWindow);
@@ -69,7 +75,7 @@ ipcMain.handle("abrir-com-nativo", async (_, { driveFileId, nomeArquivo, token, 
             // Usar loadFile previne erros com espaços e parênteses no caminho
             pdfWindow.loadFile(caminhoArquivoLocal);
         } else {
-            // 📁 OUTROS ARQUIVOS (.docx, .xlsx, .py, vídeos, etc.): Abrem no app padrão do SO
+            // OUTROS ARQUIVOS (.docx, .xlsx, .py, vídeos, etc.): Abrem no app padrão do SO
             const erroAbertura = await shell.openPath(caminhoArquivoLocal);
             if (erroAbertura) {
                 console.warn("⚠️ Não foi possível abrir o arquivo diretamente:", erroAbertura);
