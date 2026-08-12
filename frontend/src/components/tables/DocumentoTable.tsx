@@ -15,7 +15,7 @@ interface DocumentoTableProps {
 export default function DocumentoTable({
     documentos,
     pesquisa,
-    pastaAtual, // 👈 Incluído para alinhar com a interface
+    pastaAtual,
     selecionados,
     setSelecionados,
 }: DocumentoTableProps) {
@@ -26,10 +26,8 @@ export default function DocumentoTable({
             .includes((pesquisa || "").toLowerCase())
     );
 
-    // 🎯 Seleciona o arquivo atualizando a lista de selecionados
-    function selecionar(doc: Documento) {
-        setSelecionados([doc]);
-    }
+    // Seleciona o arquivo atualizando a lista de selecionados
+    function selecionar(doc: Documento) {setSelecionados([doc]);}
 
     return (
         <table className="document-table">
@@ -45,17 +43,14 @@ export default function DocumentoTable({
                     const isSelected = selecionados.some((s) => s.id === doc.id);
                     
                     return (
-                        <tr
-                            key={doc.id}
-                            onClick={() => selecionar(doc)}
-                            className={isSelected ? "selected" : ""}
-                        >
+                        <tr key={doc.id}onClick={() => selecionar(doc)}className={isSelected ? "selected" : ""}>
                             <td>
                                 {getFileIcon(doc.mime_type)}{" "}
                                 {doc.nome_original}
                             </td>
                             <td>{formatFileSize(doc.tamanho)}</td>
-                            <td>{formatDate(doc.modified_time || doc.updated_at || doc.created_at)}</td>                        </tr>
+                            <td>{formatDate(doc.modified_time || doc.updated_at || doc.created_at)}</td>
+                        </tr>                    
                     );
                 })}
 

@@ -12,10 +12,9 @@ export interface UploadItem {
     mensagemErro?: string;
 }
 
-// 🎯 DECLARAÇÃO CORRIGIDA: Adicionada a propriedade 'temUploadAtivo'
 interface UploadContextData {
     uploads: UploadItem[];
-    temUploadAtivo: boolean; // 👈 Adicionado aqui para resolver o erro de TS
+    temUploadAtivo: boolean; 
     adicionarUploads: (files: FileList | File[], parentId: string | null) => void;
     adicionarUploadPasta: (files: FileList | File[], parentId: string | null) => Promise<void>;
     limparUploadsConcluidos: () => void;
@@ -55,8 +54,18 @@ export function UploadProvider({ children }: { children: ReactNode }) {
             formData.append("parent_id", item.parentId);
         }
 
+        // Recupera o token de autenticação
+        const token = localStorage.getItem("access_token");
+
+        // Utilize a URL do seu backend no Render (ou variável de ambiente)
+        const BASE_URL = "https://management-system-6bb0.onrender.com"; 
+
         try {
-            await axios.post("http://localhost:8000/documentos/upload", formData, {
+            await axios.post(`${BASE_URL}/documentos/upload`, formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    // O browser define o Content-Type 'multipart/form-data' automaticamente
+                },
                 onUploadProgress: (progressEvent) => {
                     if (progressEvent.total) {
                         const percentual = Math.round((progressEvent.loaded * 100) / progressEvent.total);

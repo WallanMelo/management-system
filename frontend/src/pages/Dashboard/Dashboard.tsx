@@ -24,7 +24,7 @@ function formatarTempoRelativo(data: Date | null): string {
   return `há ${dias} dia${dias > 1 ? "s" : ""}`;
 }
 
-// 🔓 Decodifica as informações contidas no JWT (access_token)
+// Decodifica as informações contidas no JWT (access_token)
 function obterDadosDoToken(): any {
   try {
     const token = localStorage.getItem("access_token");
@@ -181,7 +181,7 @@ export default function Dashboard() {
     }
   }
 
-  // 🔗 Redireciona para o fluxo OAuth2 do Backend
+  // Redireciona para o fluxo OAuth2 do Backend
   function handleConectarGoogleDrive() {
     const authUrl = "https://management-system-6bb0.onrender.com/integracoes/google/login";
     
@@ -292,6 +292,14 @@ export default function Dashboard() {
                   </div>
                 </button>
               )}
+
+              <Link to="/configuracoes" className="action-btn">
+                <span>⚙️</span>
+                <div>
+                  <strong>Configirações</strong>
+                  <p>Altere as configurações do Sistema</p>
+                </div>
+              </Link>
 
               <Link to="/usuarios" className="action-btn">
                 <span>👥</span>
