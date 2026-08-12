@@ -2,7 +2,7 @@ from app.core.config import settings
 from sqlalchemy import create_engine
 
 # Aceita tanto a DATABASE_URL completa (padrão do Neon/Render) quanto os campos individuais
-database_url = getattr(settings, "DATABASE_URL", None) or getattr(settings, "database_url", None)
+DATABASE_URL = getattr(settings, "DATABASE_URL", None) or getattr(settings, "database_url", None)
 
 if not database_url:
     database_url = (
