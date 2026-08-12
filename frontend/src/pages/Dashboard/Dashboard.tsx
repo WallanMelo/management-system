@@ -296,7 +296,7 @@ export default function Dashboard() {
               <Link to="/configuracoes" className="action-btn">
                 <span>⚙️</span>
                 <div>
-                  <strong>Configirações</strong>
+                  <strong>Configurações</strong>
                   <p>Altere as configurações do Sistema</p>
                 </div>
               </Link>
