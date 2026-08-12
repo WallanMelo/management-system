@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 DATABASE_URL = getattr(settings, "DATABASE_URL", None) or getattr(settings, "database_url", None)
 
 if not database_url:
-    database_url = (
+    DATABASE_URL = (
         f"postgresql+psycopg2://"
         f"{settings.database_user}:"
         f"{settings.database_password}@"
@@ -15,11 +15,11 @@ if not database_url:
     )
 
 # Converte prefixos antigos 'postgres://' para 'postgresql://' se necessário
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 engine = create_engine(
-    database_url,
+    DATABASE_URL,
     echo=True,
     future=True
 )
