@@ -19,10 +19,8 @@ function createWindow() {
     });
 
     if (app.isPackaged) {
-        // Quando o app é gerado em .exe/instalado, carrega a pasta dist compilada
-        mainWindow.loadFile(path.join(__dirname, "dist", "index.html"));
+        mainWindow.loadFile(path.join(__dirname, "..", "dist", "index.html"));
     } else {
-        // Em modo de desenvolvimento, carrega a URL do Vite
         const devUrl = process.env.ELECTRON_START_URL || "http://localhost:5173";
         mainWindow.loadURL(devUrl);
     }
