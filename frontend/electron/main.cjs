@@ -19,7 +19,8 @@ function createWindow() {
     });
 
     if (app.isPackaged) {
-        mainWindow.loadFile(path.join(__dirname, "..", "dist", "index.html"));
+        // 🚀 app.getAppPath() aponta direto para a raiz interna do app.asar
+        mainWindow.loadFile(path.join(app.getAppPath(), "dist", "index.html"));
     } else {
         const devUrl = process.env.ELECTRON_START_URL || "http://localhost:5173";
         mainWindow.loadURL(devUrl);
