@@ -8,19 +8,36 @@ let mainWindow;
 const watchersAtivos = new Map();
 
 function createWindow() {
+    // Configurações de segurança para permitir carregamento de arquivo local em ASAR
+    const isPackaged = app.isPackaged;
+
+    const commonWebPreferences = {
+        preload: path.join(__dirname, "preload.cjs"),
+        nodeIntegration: false,
+        contextIsolation: true,
+        plugins: true, // Para o leitor de PDF nativo
+    };
+
+    // ADICIONE ESTAS DUAS LINHAS PARA PRODUÇÃO (CONTOURNO DE SEGURANÇA)
+    // Elas desativam a sandbox de arquivo e o isolamento de recurso de arquivo.
+    // Usamos apenas em produção e apenas na janela principal para diagnóstico final.
+    if (isPackaged) {
+        commonWebPreferences.webSecurity = false; // Desativa bloqueios de Cross-Origin e File Access
+        commonWebPreferences.sandbox = false;     // Desativa a sandbox de arquivo do navegador
+    }
+
     mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
-        webPreferences: {
-            preload: path.join(__dirname, "preload.cjs"),
-            nodeIntegration: false,
-            contextIsolation: true,
-        },
+        webPreferences: commonWebPreferences,
     });
 
-    if (app.isPackaged) {
-        // 🚀 app.getAppPath() aponta direto para a raiz interna do app.asar
+    if (isPackaged) {
+        // Carrega o arquivo local com caminho absoluto robusto
         mainWindow.loadFile(path.join(app.getAppPath(), "dist", "index.html"));
+        
+        // REATIVE O DEVTOOLS PARA DIAGNÓSTICO PERMANENTE EM PRODUÇÃO
+        // mainWindow.webContents.openDevTools(); 
     } else {
         const devUrl = process.env.ELECTRON_START_URL || "http://localhost:5173";
         mainWindow.loadURL(devUrl);
